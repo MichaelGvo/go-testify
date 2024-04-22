@@ -11,21 +11,22 @@ import (
 )
 
 // Тестирую MainHandler на корректность запроса, возврат кода ответа 200 и что тело ответа не пустое
-func TestMainHandlerHasCorrectReqAndShouldGaveCorrectAndNotEmptyResp(t *testing.T) {
+func TestMainHandlerdGaveCorrectNotEmptyResp(t *testing.T) {
 	//Делаю запрос req функцией NewRequest() из пакета httptest
 	//В качестве аргумента функция принимает HTTP метод запроса, URL запроса и тело запроса
 	//Обработчик mainHandle() не требует тело запроса, поэтому третьим параметром в NewRequest() передано nil
-	req := httptest.NewRequest("GET", "/cafe?count=2&city=moscow", nil)
+	req := httptest.NewRequest(http.MethodGet, "/cafe?count=2&city=moscow", nil)
 	//Создаю responseRecorder для записи ответа
 	responseRecorder := httptest.NewRecorder()
-	//Добавляю переменные expected и status - чтобы далее сравнить на возврат кода ответа 200
+	//Добавляю переменные expected, status и body - чтобы далее сравнить на возврат кода ответа 200 и что тело ответа не пустое
 	expected := http.StatusOK
 	status := responseRecorder.Code
+	body := responseRecorder.Body.String()
 	//Вызываю обработчик mainHandle(), в который передаю responseRecorder и req
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 	//функцией NoError() из пакета require проверяем на пустоту ответа, иначе также нет смысла дальше проверять (потому require)
-	require.NotEmpty(t, req)
+	require.NotEmpty(t, body)
 	//функцией NoError() из пакета require проверяем на возврат кода ответа 200
 	require.Equal(t, status, expected)
 }
@@ -36,7 +37,7 @@ func TestMainHandlerWhenWrongCity(t *testing.T) {
 	//В качестве аргумента функция принимает HTTP метод запроса, URL запроса и тело запроса
 	//Передаю в URL запроса - город который не поддерживается
 	//Обработчик mainHandle() не требует тело запроса, поэтому третьим параметром в NewRequest() передано nil
-	req := httptest.NewRequest("GET", "/cafe?count=2&city=dubai", nil)
+	req := httptest.NewRequest(http.MethodGet, "/cafe?count=2&city=dubai", nil)
 	//Создаю responseRecorder для записи ответа
 	responseRecorder := httptest.NewRecorder()
 	//Добавляю переменные body, expectedBody, status, expectedStatus - чтобы далее удобно было сравнить на "wrong city value" и код ответа 400
@@ -61,7 +62,7 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	//В качестве аргумента функция принимает HTTP метод запроса, URL запроса и тело запроса
 	//Передаю в URL запроса - большое число кафе, больше чем есть
 	//Обработчик mainHandle() не требует тело запроса, поэтому третьим параметром в NewRequest() передано nil
-	req := httptest.NewRequest("GET", "/cafe?count=88005553555&city=moscow", nil)
+	req := httptest.NewRequest(http.MethodGet, "/cafe?count=88005553555&city=moscow", nil)
 	//Создаю responseRecorder для записи ответа
 	responseRecorder := httptest.NewRecorder()
 	//Добавляю переменные body, list и listCount
